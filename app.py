@@ -1,26 +1,59 @@
 import streamlit as st
+import pandas as pd
+import joblib
 
-st.title("Diabetes Prediction System")
+# Load trained model
+model = joblib.load("diabetes_model.pkl")
+
+st.title("🩺 Diabetes Prediction System")
 
 st.write("Enter patient details below:")
 
-# Input Features
+# Inputs
 gender = st.selectbox("Gender", ["Male", "Female"])
 
-age = st.number_input("Age", min_value=0, max_value=120, value=25)
+age = st.number_input(
+    "Age",
+    min_value=1,
+    max_value=120,
+    value=30
+)
 
-hypertension = st.selectbox("Hypertension", [0, 1])
+hypertension = st.selectbox(
+    "Hypertension",
+    [0, 1]
+)
 
-heart_disease = st.selectbox("Heart Disease", [0, 1])
+heart_disease = st.selectbox(
+    "Heart Disease",
+    [0, 1]
+)
 
 smoking_history = st.selectbox(
     "Smoking History",
-    ["never", "former", "current", "No Info"]
+    [
+        "No Info",
+        "never",
+        "former",
+        "current",
+        "not current",
+        "ever"
+    ]
 )
 
-bmi = st.number_input("BMI", min_value=10.0, max_value=60.0, value=25.0)
+bmi = st.number_input(
+    "BMI",
+    min_value=10.0,
+    max_value=60.0,
+    value=25.0
+)
 
-hba1c = st.number_input("HbA1c Level", min_value=3.0, max_value=15.0, value=5.5)
+hba1c = st.number_input(
+    "HbA1c Level",
+    min_value=3.0,
+    max_value=15.0,
+    value=5.5
+)
 
 blood_glucose = st.number_input(
     "Blood Glucose Level",
@@ -31,17 +64,26 @@ blood_glucose = st.number_input(
 
 if st.button("Predict"):
 
-    st.success("Patient details submitted successfully!")
+    input_data = pd.DataFrame({
+        "gender": [gender],
+        "age": [age],
+        "hypertension": [hypertension],
+        "heart_disease": [heart_disease],
+        "smoking_history": [smoking_history],
+        "bmi": [bmi],
+        "HbA1c_level": [hba1c],
+        "blood_glucose_level": [blood_glucose]
+    })
 
-    st.write("### Entered Details")
+    input_data = pd.get_dummies(input_data)
 
-    st.write("Gender:", gender)
-    st.write("Age:", age)
-    st.write("Hypertension:", hypertension)
-    st.write("Heart Disease:", heart_disease)
-    st.write("Smoking History:", smoking_history)
-    st.write("BMI:", bmi)
-    st.write("HbA1c Level:", hba1c)
-    st.write("Blood Glucose Level:", blood_glucose)
+    try:
+        prediction = model.predict(input_data)
 
-    st.info("Next step: Connect Random Forest model for prediction.")
+        if prediction[0] == 1:
+            st.error("⚠️ Diabetic")
+        else:
+            st.success("✅ Not Diabetic")
+
+    except Exception as e:
+        st.error(f"Prediction Error: {e}")
