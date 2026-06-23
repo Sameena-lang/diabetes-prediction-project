@@ -18,4 +18,4 @@ Random Forest: 99.699%
 - NumPy
 - Scikit-Learn
 - Matplotlib
-- Streamlit
+- Streamlits
